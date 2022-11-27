@@ -4,6 +4,7 @@ plugins {
 }
 
 apply from: rootProject.file('android_build.gradle')
+apply from: '../dependencies.gradle'
 
 android {
 
@@ -12,4 +13,20 @@ android {
       versionNameSuffix("-debug")
     }
   }
+
+  buildFeatures {
+    compose true
+  }
+
+  composeOptions {
+    kotlinCompilerExtensionVersion versions.compose
+  }
+}
+
+dependencies {
+  implementation libraries.activity
+
+  implementation libraries.composeActivity
+  implementation libraries.composeUiTooling
+  implementation libraries.composeMaterial
 }

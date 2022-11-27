@@ -1,0 +1,14 @@
+ext {
+	versions = [
+	   activity   : "1.5.0",
+	   compose    : "1.2.0-alpha07",
+	]
+
+	libraries = [
+	   activity : "androidx.activity:activity-ktx:$versions.activity",
+
+	   composeActivity  : "androidx.activity:activity-compose:$versions.compose",
+	   composeUiTooling : "androidx.compose.ui:ui-tooling:$versions.compose",
+	   composeMaterial  :  "androidx.compose.material:material:$versions.compose",
+	]
+}
