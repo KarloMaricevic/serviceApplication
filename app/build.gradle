@@ -1,0 +1,15 @@
+plugins {
+  id 'com.android.application'
+  id 'org.jetbrains.kotlin.android'
+}
+
+apply from: rootProject.file('android_build.gradle')
+
+android {
+
+  buildTypes {
+    debug {
+      versionNameSuffix("-debug")
+    }
+  }
+}

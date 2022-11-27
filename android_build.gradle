@@ -1,0 +1,21 @@
+//This is central place to setup all common gradle properties, such as defining target and minimum sdk's for all other project modules.
+
+android {
+  compileSdkVersion 33
+
+  defaultConfig {
+    minSdkVersion 21
+    targetSdkVersion 33
+
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+  }
+
+  kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
+  }
+}
