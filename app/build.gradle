@@ -24,6 +24,10 @@ android {
 }
 
 dependencies {
+  implementation libraries.koinCore
+  implementation libraries.koinCompose
+  implementation libraries.koinAndroid
+
   implementation libraries.activity
 
   implementation libraries.composeActivity
