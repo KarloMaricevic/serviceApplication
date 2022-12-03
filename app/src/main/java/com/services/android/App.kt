@@ -1,8 +1,8 @@
-package com.githubapp.android
+package com.services.android
 
 import android.app.Application
 import com.example.servicesApplication.BuildConfig
-import com.githubapp.android.di.appModules
+import com.services.android.di.appModules
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin

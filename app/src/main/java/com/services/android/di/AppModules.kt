@@ -1,4 +1,4 @@
-package com.githubapp.android.di
+package com.services.android.di
 
 import org.koin.core.module.Module
 

@@ -1,4 +1,4 @@
-package com.githubapp.android
+package com.services.android
 
 import androidx.activity.ComponentActivity
 
