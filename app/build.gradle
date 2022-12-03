@@ -31,6 +31,7 @@ dependencies {
   implementation libraries.activity
 
   implementation libraries.composeActivity
+  implementation libraries.composeNavigation
   implementation libraries.composeUiTooling
   implementation libraries.composeMaterial
 }
