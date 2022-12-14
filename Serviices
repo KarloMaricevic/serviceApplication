@@ -1,0 +1,107 @@
+App compenenti su entery pointovi kroz koje system ili user moze uci u tvoju aplikaciju.
+
+4 tipa app kompenenta:
+ 1. Activitys
+ 2. Services
+ 3. Broadcast receivers
+ 4. Content providers
+ 
+Services:
+  - general prpus entery point za drzanje aplikacija radeci u backgradnu iz mnogih razloga.
+  - komenent koji radi dugo operaciju ili radi posao drugog procesa
+  - ne postojeci user interface
+  - primjeri:
+     1. Services mogu pustati glazu u pozadini
+     2. Fetchanje podataka s interneta bez da se userom UI blokira
+   - Drugi komponenti (npr. activity) moze [pkrenuti service i pustiti da radi ili bindad se na servis da moze interaktirati s njim
+
+2 tipa servisa koji kozu sistemu kako managat aplikaciju:
+ 1. Started services
+ 2. bound services
+
+1.Started Service- kazu sistemu da ih rade dok "work" nije dovrsen.
+	U Starded servicu postoje 2 tipa:
+		1. obicni background service (updajtanje baze podataka, slanje podataka na server)
+			1. user nije svjestan da to radi 
+			2. sistem ima vise slobode u managanju tog procesa(ako nema RAM-a,moze ga ubiti, pa resetirati kasnije kada se RAM osobodi) 
+		2. forground (pustanje glazbe): 
+            		1. user svjestan da to radi
+            		2. user dobiva notifikaciju (zahtjevom da user dobiva obavjest dovbivamo da service bude forground) 
+            		3. OS ce svim snaga pokusati da ovaj servis se ne ugasi  
+            
+2.Bound services (IPC) - 
+	Rade jer neki drugi app(ili sistem) je rekao da zele koristiit servis. 
+	Ovaj servis je zapravo API prema drugom procesu(linux proces...)
+	Tako sistem zna da postoji dependancy izmedu procesa sto znaci da:
+           1.ako proces A je boundan na serivice iz procesa B, zna da treba drzati service procesa B sve dok porces A radi
+           2.ako je proces A nesto za cega user mari onda je to i proces B
+
+
+Dosta core stystem featura su bildani na servisima (Live wallpapers, notification listener, screen savers, input methods).
+
+SERVISI:
+
+Kada koristiti service a kada thredove?
+  1. Service je komponent koji moze raditi u backgraundu(ne mora biti vidljiv korisniku) te bi se za to trebao koristiti
+  2. ako se zeli pustati glazba, ali samo ako je user u aplikaciju to se radi sa thredanjem
+  
+BASICS:
+Kako bi krirao service moras subclasat Service klasu, a u implementaciji moras overridat neke callback metode koji hednnelaju:
+	1. Kljucne aspete od service lifecyla
+	2. provajdaju mehanizme gdje se omogucuje da se komponenti bindaju na servis (ako je potrebno)
+	
+Metode su:
+	1. onStartCommand - sistem invocira metode tako da zove startService() kada drugi komponent(npr. activity) zahtjeva da se service pokren. Kada se service pokrene moze raditi u backgroundu indefinetly. Ako se ovo implmentira tvoja odgovornost je stopirati service kada je work dovrsen pozivajuci stopSelf() ili stopService(). Ako porvajdas binding nije potrebno koristiti ovu metodu. 
+	2. onBind() - sistem invocika ovu metodu tako da zove bindService() kada drugi komponent se zeli se bindat na service(npr. da napravi RPC[remote procedure calll]), 
+                      Nacini implementiranja ove metoda:
+                         1. Bind omogucavanje - moras provajdat interface koji ce klijent koristiti za komunikaciju sa servicom tako da returna IBinder
+                         2. Bind onemugucen - vrati null
+	3. onCreate - sistem invocira metodu da performa one-tiime setup kada se servis kreira
+        4. onDestory - sistem invocira ovu metodu kada se service vise ne koristi i unistava se. (koristi se za clen up)
+        
+Ako se servis pokrenuo sa bindService on ce biti ziv dok svi komponenti koji su pozvali bind se ne odbindaju.        
+        
+Nacini zaustavlljanja servisa: 
+      1. unutar servisa - pozovi stopSelf()
+      2. unutar drugog komponenta - stopService()
+
+SISTEM UBIJANJE I SERVISI:
+      
+Androdi sistem ce unisitti servise ako mu ponestaje memorije i mora recoverati system resurse za Activity na kojeg se user fokusira. Iznimke su:
+     1. ako servise je boundan na activity u forgroundu
+     2. ako je servis deklaran da radi u foregroundu
+     
+Ako je servise long-time running stavlja se na nize na listu background taskova i pocinje biti meta za ubijanje ako je potrebno     
+     
+Sistem ce ponovo pokrenuti servis cim bude imao dovoljno servisa i ako je return value na onStartCommand() odgovarajuci.
+
+	
+DEKLARIRANJE SERVISA:
+
+- potrebno je deklarirati sve servise u manifestu(kao i sve ostale komponente).
+- ako publishas aplikaciju nemoj mjenjati ime servisa jer moze breakat aplikaciju kada se updajta
+- description atribut:  da korisnik zna sto radi (inace on moze vidljeti sve servise koji rade na uredaju i ubiti tvoj jer ne zna sto radi)
+- exported: false ako ne zelis da druga aplikacije korisit tvoj servis
+- koristi explicitne intenta kada pokreces servise, i nemoj deklarirati intent filtere za tvoj servis. Korsitenje imlicitnih intentova kako bi pokreno service je sigurnosna prijetnja, jer ne mozes biti siguran da li je service koji si htio pokrenut, te sene moze napraviit od API 21 (throwa exception)
+primjer:
+
+<manifest ... >
+  ...
+  <application ... >
+      <service android:name=".ExampleService" />
+      ...
+  </application>
+</manifest>
+
+CREATING A STARTED SERVICE:
+
+Starte servis je ona koja drugi komponent nazove pozivajuci startService(), sto rezultira zvanjem servisove onStartCommand metode.
+
+U ovom slucaju service ima independantni lifecycla od komponenta koji ga je zapoceo (service moze raditi u pozadini beskonacno), zato moras napraviti jedno od ovih stvari:
+                1. pozvati stopSelf() unutar servisa
+                2. pozvati stopService iz nekod drugog komponenta
+                
+                
+
+
+

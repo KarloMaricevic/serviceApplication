@@ -28,6 +28,7 @@ dependencies {
   implementation libraries.koinCompose
   implementation libraries.koinAndroid
 
+  implementation libraries.androidCore
   implementation libraries.activity
 
   implementation libraries.composeActivity

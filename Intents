@@ -1,0 +1,193 @@
+Intent je messeging objekt koji se koristi za "trazenje" da neku akciju odradi drugi app component
+
+Postoje 3 glavna slucaja za koristenje:
+	1. Pokretanje activitya: 
+- passanje Intenta u startActivity, Intent opisuje activity koji zelis pokrenuti i ima sve potrebne podatke u sebi za drugi activity
+- ako zelis primiti rezultat nakon sto se activity zavrsi pozivi startActivityForResult, pa ce tvoj activity dobiti rezultat kao drugi Intent u Activiynom onActivityResult())
+	2. Pokretanje servisa - 
+- pasas objekt u startService(), intent opisuje servis koji treba pokrenuti i ima sve potrebne podatke u sebi za servis,
+- ako je servis dezajnira sa clinet-servis interfajsom, mozes se bindat na servise iz drugog komponenta tako da pasas Intent u bindService()
+	3. Slanje bradcasta
+- saljes ga drugim aplikacijma tako da pasas Intent u sendBroadcast() ili sendOrderedBroadcast()
+- broadcast je pruka koju bilo koja aplikacija moze primiti. 
+
+
+INTENT TYPES:
+ 1. Explicit intents:
+ - specificira koja apliakcija ce satisficirati intent, tako da napravi jednu od dvije stvari:
+            1. "targets app's package name"  (com.example.shoppingApp)
+            2. "fully qulified component class name" (com.example.shoppingApp.{direktorij}.BasicService::class.java)
+            
+            
+            
+ 2. Implicitni intentovi:
+ - ne imenuje spcificni komponent, nego deklera generalnu akciju koju treba izvrsiti, sto dopusta da komponent iz druge aplikacije da uradi
+- kada korisnik koristi implicitni intent android system nalazi component koji da pokrene tako da usporeduje content Intenta sa intent filterom deklaliranog u manifest filu svih aplikacija u uredaju
+- ako intent matcha intent filter sistem starta komponent i daje mu Intent objekt, a ako je vise intent filtera(aplikacija) kompatabilno sistem displaya dialog tako da user moze odabrati koji aplikaciju zeli koristiti
+ 
+Intent filter:            
+Intent filter je expesion u maifestu koji specificra koje tipove intenta taj komponent bi htio primiti. 
+ 1. ako dekleras: intent filter za Activity radis da druge aplikacije mogu poreknuti tvoj activity sa tim tipom Intenta
+ 2. ako ne deklariras: activity se moze porekunuti samo s explicit Intentom             
+ 
+ Nemoj koristiti za servies jer ce to porekenuti servise i zasrat ram, i od API 21 je zabranjeno
+ 
+Primjer:
+ 
+ //TODO
+ 
+ 
+BUILDING AN INTENT:
+
+Intent ima u sebi:
+	1. Component name: ime komponenta koji treba pokrenuti (opcijalno, radi intent explicitnim)
+- ovo se moze definirati na vise nacina:
+ 		1. prilikom kreiranja Intenta
+ 		2. setClass()
+ 		3. setClassName()
+ 		4. setComponent()
+- svi ovi nacini se svode na isto samo jedna prima context pa iz njega izvlaci pacckage name, a neki primeju string za package name itd. 		
+- ako definiramo intent ce doci samo do aplikacijog komponenta kojeg si definirao
+- bez ovoga intent je implicitan i sistem odlucuje kome ce dati intent zasnivano na drugim informacijama(action,data ,category)
+
+- Component name se moze predati Inentu te zahtjeva znaje:
+         1. pacage name u kojem se komponent nalazi (moze mu se predati context iz aplikacije ako je kompoenent kojeg zelis pozvati unutar te aplikacije)
+         2. ime klase unutar paketa (moze se predati ImeKlase::class.java ako je klasa koju zelis pozvati unutar aplikacije)
+         
+	2. Action: string koji sppecificira genericnu akciju koju je potrebno napraviti (npr. view ili pick)
+- u slucaju bradcasta intenta, ovo je akcija koja se dogodila i reporta se aplikacijima
+- akcija vecinom utjece kako ce ostatka intenta biti strukruirarn(posebno informacije koje sadrzava u "data" i "extras")
+- moguce je spcificirati svoje akcije za koristenje s Intentovima unutar tvoje aplikacije(ili da druge aplikacije mogu pozvati komponente iz tvoje aplikacijee), ali najcece specificiras akcuju koje je pomocu konstanta definirana u Intent klasi ili drugim framework klasama(npr. settings za otvaranje specificnih ekrana u system settings appu)
+
+Primjeri:
+	1. ACTION_VIEW - koristi se za predaju informacije Activityu koji moze tu informaciju pokazati korisniku,npr. sliku da korisnik pogleda u galery appu ili adresu da pogledas u map appu
+	2. ACTION_SEND - kada imas neki podatak koji korinik moze sherati kroz drugi app, npr. email app ili facebook, instagram...
+
+- ako definiras svoju akciju includaj app's package name u prefixu npr.
+const val ACTION_TIMETRAVEL = "com.example.shopingApp.TIMETRAVEL"
+
+	3. Data - URI objekt, referencira datu na koju treba djelovati i/ili MIME type od te data-e
+
+Kada se kreira intent dobro je specificirati tip podata(MIME) sa URI-em (neki playeri ne mogu pokretati .mp4), ponekad MIME se moze vidjeti iz URI-a, posebno ako je data conent sto signalizira da je data locirana na uredaju i kontrolirana pomocu ContentProvidera sto cini njezin MIME type vidljiv sistemu
+
+Metode za postavljanje	Date:
+	1. setData() - samo seta datu bez MIME
+	2. setType() - seta samo MIME
+	3. setDataAndType() - oboje
+	
+OREZNO: zvanjem 1. metode ponisti ce se poziv 2. metode i obrnuto 		
+
+URI:
+data:[<media type>][;base64],<data>	
+
+Media type[MIME] (pojednostavljeno) - 
+
+	type/subtype [;
+		attribute = value;
+		ttribute2 = value2;
+		...
+	]
+	primjer typova je:
+		1. application
+		2. audio
+		3. image
+		4. text
+	
+	primjer subtypova je:
+		1. javascript
+		2. mpeg
+		3. png
+		4. html
+	
+	primjer atributa su:
+		1. charset=UTF-8
+
+;base64 - ako se korisit indicira da je data content URI-a binarni podatak, enkodiran ASCII formatam koristene BASE64 schemom iz binery to text encdoing
+
+data - sekvenca 0 ili vise okteta reprezentirana karakterima 
+
+primjeri:  
+	1. data:text/html;<h1>Hello, World!</h1>
+	2. content://media/external/audio/media/710
+	
+	
+	4.Category - string koji sadrzi informaciju kaji tip komponenta bi trebao handelati intent
+- cesto se ne korsite
+- primjer kategorija:
+	1. CATEGORY_BRAWSABLE: ciljana aktivnost dopusta da bude pokrenuta od web browsera kako bi displayali datu referencirane pomocu linka, npr. slika, email
+	2. CATEGORY_LUNCHER - activitye je inicijalni activity od taska i listan je u systems app launcheru
+         
+         
+         5. Exras - key-value parovi koji nose dodatne informacije potrebne da se napravi zahtjevana akcija
+Primjer:
+	Ako kreiras intent za sljanje maila sa ACTION_SEND, mozes specificirati primatelja pomocu EXTRA_EMAIL kljucem, i spcificirati subjekt sa EXTRA_SUBJECT kljucem
+	
+Mozes napraviti svoje extras keyeve (samo specifiraj ime paketa)
+const val EXTRA_GIGAWATTS = "com.example.EXTRA_GIGAWATTS"
+
+Pozor: nemoj koristiti Paracbele ili Serilazable datu kada saljes intent koji ocekujes da ce druga aplikacija primiti, ako druga aplikacija pokusa accesat datu u Bundlu, a nema access parceliziranoj ili seriliziranoj klasi, sistem ce dici RuntimeException
+
+	6. Flags: metadata od intenta
+- definirane u Intent klasi
+- flagovi mogu instuktirat AndroidSystem kako da launcha activity (npr. kojem tasku bi trebao activity pripadati ili kako tretirati aplikaciju nakon sto ju pokrenes)	   
+
+FALE 3 STAVKE KASNIJE ODRADI 
+	1. Example explicit intent     
+	2. Example implicit intent
+	3. Forcing an app chooser
+	
+UNSAFE INTENT LAUNCHES:
+
+- moze se dogoditi ako tvoj app pruza service koji starta Activty/Servis kao callback ako se neka akcija dogodi
+
+- normalni flow koji bi htio dobiti je da druga aplikacija napravi intent u koji u extras stavlja drugi intent koji pokrece njegov servis/activity
+
+- potencijalni problemi ovog nacina su 
+	1. CallbackService/Activity mora biti exportan, sto znaci da moze porekrnuti bilo koja aplikacija (a zapravo bi se trebalo samo koristiit kao callback kako bi klijentska aplikacija dobila event sa mozda nekim podacima)
+	2.  Intent koji je pasan, moze imati Intent koji pokrece Activity/Servis od Provider activitya (koji nije exportan)
+
+- ako tvoj aplikacija performa ove 2 akcije, sisten detejtura nesigurno lancanje intenta i strictMode pogrijexska se dogodi:
+	1. Tvoj app unparcela nested intent dobiven od extras od deliveranog intenta
+	2. Tvoj app odmah porece app component koristeci taj nested intent (tako da passa intent u startActivity, startService, bindService)
+	
+PENDING INTENT:
+- deskripcija intenta i target akcije koje treba performat s njim
+- davanjem pending intenta drugoj aplikaciji, dajes joj prava da performa operaciju koju si specificirao kao da je to aplikacija koja salje PendingIntent(ista prava i indentitet)
+- posto dajes prava drugoj aplikaciji bitno je da napravis explicitini intent kako neka aplikaciju koju ne targetas ne dobije tvoja prava
+	
+-Pending intent je reference prema tokena koji drzi sustav. To znaci da pending intent ce ostat uporabljiv od drugih procesa iako aplikacijki proces je ubijen. Ako aplikacija kasnije reretriva isti "kind" PendingIntenta (ista operacija, isti Intent action,data, categories, components i iste zastave), dobiti ce PendingIntent koji representa isti token koji je i dalje validan te moze zvati cancel() da ga makne
+
+- zbog cancel ponasanja, bitno je znati kaka su 2 Intenta isti. Cesta pogrijeska je da vise PendingIntetnova se razlikuju samo po extra contentu, te ljudi ocekuju da su to onda razliciti PendingIntentovi(sto nije istina). Djelovi Inteta koji su uzimuaju u obzir prilikom usporedivanja su isi oni definirani sa Intent.filterEquals
+
+Nacini da intenovi budu razliciti:
+	1. Intent.filterEquals override 
+	2. drugu request code	
+
+Flogovi:
+	1. FLAG_CANCEL_CURRENT - ako vec takav PendingIntent postoji, cancalaj ga i generiraj novi PendingIntent	   
+        2. FLAG_UPDATE_CURRENT - ako vec takav PendingIntent postoji, zadrzi ga ali updejtaj extra datu
+	3. FLAG_ONE_SHOOT - pending intent se moze koristiti samo jednom
+	4. FLAG_IMMUTABLE - nitko osim kreator aplikacije ne moze izmjeniti PendingIntent
+
+
+CHECK FOR UNSAFE INTENT LAUNCHES:
+
+        // Other StrictMode checks that you've previously added.
+        // ...
+        .detectUnsafeIntentLaunch()
+        .penaltyLog()
+        // Consider also adding penaltyDeath()
+        .build())
+
+
+RECIVING IMPLICIT INTENT:
+- kako bi znali koji implicit intent aplikacija moze recivat, deklariraj intent filtere u app manifestu, za svaki od tvojih komponenta sa <intent-filter> elementom
+
+Svaki intent filter specificira tip intentova koje prima na temelju:
+	1. intnet action
+	2. data 
+	3. category
+
+- sistem delivera implicitni intent tvojoj aplikaciji samo ako intent moze proci kroz jedan od tvojih intent filtera (explicitni intentovi su drukciji, uvije se deliveraju meti nebitno o filterima)
+
+

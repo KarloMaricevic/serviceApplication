@@ -1,6 +1,7 @@
 ext {
 	versions = [
 	   koin       : "3.1.4",
+	   core       :  "1.9.0",
 	   activity   : "1.5.0",
 	   compose    : "1.2.0-alpha07",
 	   composeNavigation : "2.4.2",
@@ -11,6 +12,7 @@ ext {
 	   koinAndroid      : "io.insert-koin:koin-android:$versions.koin",
 	   koinCompose      : "io.insert-koin:koin-androidx-compose:$versions.koin",
 
+	   androidCore      : "androidx.core:core-ktx:$versions.core",
 	   activity : "androidx.activity:activity-ktx:$versions.activity",
 
 	   composeActivity  : "androidx.activity:activity-compose:$versions.compose",
